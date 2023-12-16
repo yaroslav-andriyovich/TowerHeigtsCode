@@ -70,6 +70,9 @@ namespace CodeBase.Infrastructure.Scene
             Container.Bind<LandingController>().AsSingle();
             Container.BindInterfacesAndSelfTo<TransformDescender>().AsSingle();
             Container.BindInterfacesAndSelfTo<StabilityController>().AsSingle();
+            
+            Container.Bind<CollisionHandler>().AsSingle();
+            Container.Bind<BlockHandler>().AsSingle();
         }
     }
 }
