@@ -6,13 +6,12 @@ using Zenject;
 
 namespace CodeBase.Gameplay.Services
 {
-    public class BlockCollisionDetector : ITickable
+    public class BlockCollisionDetector : ITickable, IDisposable
     {
         public event Action<Block, IObstacle> OnCollision;
         public bool Detecting => _block != null;
         
         private Collider[] _hittableColliders = new Collider[2];
-        private ITickable _tickableImplementation;
         private Block _block;
 
         public void Tick()
@@ -21,6 +20,9 @@ namespace CodeBase.Gameplay.Services
                 OnCollision?.Invoke(_block, obstacle);
         }
 
+        public void Dispose() => 
+            StopDetect();
+
         public void StartDetect(Block block)
         {
             if (_block != null)
@@ -28,7 +30,7 @@ namespace CodeBase.Gameplay.Services
             
             _block = block;
         }
-        
+
         public void StopDetect() => 
             _block = null;
 

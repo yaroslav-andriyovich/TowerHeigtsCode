@@ -3,11 +3,11 @@ using CodeBase.Gameplay.Services;
 using CodeBase.Gameplay.Services.BlockBind;
 using CodeBase.Gameplay.Services.BlockMiss;
 using CodeBase.Infrastructure.States;
-using UnityEngine.InputSystem;
+using Zenject;
 
 namespace CodeBase.Gameplay.States
 {
-    public class LevelLoopState : ILevelState, IState
+    public class LevelLoopState : ILevelState, IState, ITickable
     {
         private readonly BlockBinder _blockBinder;
         private readonly BlockCollisionDetector _collisionDetector;
@@ -40,7 +40,7 @@ namespace CodeBase.Gameplay.States
             _collisionDetector.OnCollision += _blockHandler.HandleCollision;
             _missChecker.OnMiss += _blockHandler.HandleMiss;
 
-            EnableInput();
+            _gameplayInput.Enable();
         }
 
         public void Exit()
@@ -49,27 +49,18 @@ namespace CodeBase.Gameplay.States
             _collisionDetector.OnCollision -= _blockHandler.HandleCollision;
             _missChecker.OnMiss -= _blockHandler.HandleMiss;
 
-            DisableInput();
-        }
-
-        private void EnableInput()
-        {
-            _gameplayInput.Tap.performed += OnPlayerTap;
-            _gameplayInput.Enable();
-        }
-
-        private void DisableInput()
-        {
-            _gameplayInput.Tap.performed -= OnPlayerTap;
             _gameplayInput.Disable();
         }
 
-        private void OnPlayerTap(InputAction.CallbackContext ctx)
+        public void Tick()
         {
-            if (IsPlayerInputBlocked())
-                return;
+            if (_gameplayInput.Tap.WasPressedThisFrame())
+            {
+                if (IsPlayerInputBlocked())
+                    return;
             
-            _blockBinder.Unbind();
+                _blockBinder.Unbind();
+            }
         }
 
         private bool IsPlayerInputBlocked() => 

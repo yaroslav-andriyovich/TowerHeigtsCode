@@ -5,11 +5,11 @@ using CodeBase.Gameplay.Services.BlockReleaseTimer;
 using CodeBase.Gameplay.Services.TransformDescend;
 using CodeBase.Infrastructure.States;
 using Cysharp.Threading.Tasks;
-using UnityEngine.InputSystem;
+using Zenject;
 
 namespace CodeBase.Gameplay.States
 {
-    public class LevelStartState : ILevelState, IState
+    public class LevelStartState : ILevelState, IState, ITickable
     {
         private readonly LevelStateMachine _stateMachine;
         private readonly IBlockPool _blockPool;
@@ -42,11 +42,17 @@ namespace CodeBase.Gameplay.States
         public void Enter()
         {
             Initialize();
-            EnableInput();
+            _menuInput.Enable();
         }
 
         public void Exit() => 
-            DisableInput();
+            _menuInput.Disable();
+
+        public void Tick()
+        {
+            if (_menuInput.StartGame.WasPressedThisFrame())
+                StartGame().Forget();
+        }
 
         private void Initialize()
         {
@@ -55,24 +61,9 @@ namespace CodeBase.Gameplay.States
             _transformDescender.DescendDefaultTransforms();
         }
 
-        private void EnableInput()
-        {
-            _menuInput.StartGame.performed += OnPlayerStartGame;
-            _menuInput.Enable();
-        }
-
-        private void DisableInput()
-        {
-            _menuInput.StartGame.performed -= OnPlayerStartGame;
-            _menuInput.Disable();
-        }
-
-        private void OnPlayerStartGame(InputAction.CallbackContext ctx) => 
-            StartGame().Forget();
-
         private async UniTaskVoid StartGame()
         {
-            DisableInput();
+            _menuInput.Disable();
             _blockBinder.BindNext();
             await _ropeMovement.Drop();
             _releaseTimerController.Start();
