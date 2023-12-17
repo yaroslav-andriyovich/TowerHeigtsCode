@@ -66,11 +66,11 @@ namespace CodeBase.Infrastructure.Scene
             Container.BindInterfacesAndSelfTo<ComboChecker>().AsSingle();
             Container.Bind<ObstacleValidator>().AsSingle();
             Container.Bind<CollisionValidator>().AsSingle();
-            Container.BindInterfacesAndSelfTo<CollisionObserver>().AsSingle();
             Container.Bind<LandingController>().AsSingle();
             Container.BindInterfacesAndSelfTo<TransformDescender>().AsSingle();
             Container.BindInterfacesAndSelfTo<StabilityController>().AsSingle();
             
+            Container.BindInterfacesAndSelfTo<BlockCollisionDetector>().AsSingle();
             Container.Bind<CollisionHandler>().AsSingle();
             Container.Bind<BlockHandler>().AsSingle();
         }

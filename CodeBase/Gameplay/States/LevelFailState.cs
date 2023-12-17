@@ -14,7 +14,7 @@ namespace CodeBase.Gameplay.States
         private readonly SoundPlayer _soundPlayer;
         private readonly MissChecker _missChecker;
         private readonly ReleaseTimerController _releaseTimerController;
-        private readonly CollisionObserver _collisionObserver;
+        private readonly BlockCollisionDetector _collisionDetector;
         private readonly RopeMovement _ropeMovement;
 
         public LevelFailState(
@@ -22,19 +22,19 @@ namespace CodeBase.Gameplay.States
             MissChecker missChecker,
             ReleaseTimerController releaseTimerController,
             HoistingRope hoistingRope,
-            CollisionObserver collisionObserver
+            BlockCollisionDetector collisionDetector
         )
         {
             _soundPlayer = soundPlayer;
             _missChecker = missChecker;
             _releaseTimerController = releaseTimerController;
-            _collisionObserver = collisionObserver;
+            _collisionDetector = collisionDetector;
             _ropeMovement = hoistingRope.Movement;
         }
 
         public void Enter()
         {
-            _collisionObserver.StopTracking();
+            _collisionDetector.StopDetect();
             _missChecker.Stop();
             _releaseTimerController.Stop();
 

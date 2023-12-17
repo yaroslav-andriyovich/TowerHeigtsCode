@@ -10,7 +10,7 @@ namespace CodeBase.Gameplay.States
     public class LevelLoopState : ILevelState, IState
     {
         private readonly BlockBinder _blockBinder;
-        private readonly CollisionObserver _collisionObserver;
+        private readonly BlockCollisionDetector _collisionDetector;
         private readonly HoistingRope _hoistingRope;
         private readonly MissChecker _missChecker;
         private readonly BlockHandler _blockHandler;
@@ -20,7 +20,7 @@ namespace CodeBase.Gameplay.States
         public LevelLoopState(
             InputActions inputActions,
             BlockBinder blockBinder,
-            CollisionObserver collisionObserver,
+            BlockCollisionDetector collisionDetector,
             HoistingRope hoistingRope, 
             MissChecker missChecker,
             BlockHandler blockHandler
@@ -28,7 +28,7 @@ namespace CodeBase.Gameplay.States
         {
             _gameplayInput = inputActions.Gameplay;
             _blockBinder = blockBinder;
-            _collisionObserver = collisionObserver;
+            _collisionDetector = collisionDetector;
             _hoistingRope = hoistingRope;
             _missChecker = missChecker;
             _blockHandler = blockHandler;
@@ -37,7 +37,7 @@ namespace CodeBase.Gameplay.States
         public void Enter()
         {
             _hoistingRope.OnReleased += _blockHandler.HandleRelease;
-            _collisionObserver.OnCollision += _blockHandler.HandleCollision;
+            _collisionDetector.OnCollision += _blockHandler.HandleCollision;
             _missChecker.OnMiss += _blockHandler.HandleMiss;
 
             EnableInput();
@@ -46,7 +46,7 @@ namespace CodeBase.Gameplay.States
         public void Exit()
         {
             _hoistingRope.OnReleased -= _blockHandler.HandleRelease;
-            _collisionObserver.OnCollision -= _blockHandler.HandleCollision;
+            _collisionDetector.OnCollision -= _blockHandler.HandleCollision;
             _missChecker.OnMiss -= _blockHandler.HandleMiss;
 
             DisableInput();

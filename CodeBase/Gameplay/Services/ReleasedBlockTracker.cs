@@ -6,30 +6,30 @@ namespace CodeBase.Gameplay.Services
 {
     public class ReleasedBlockTracker
     {
-        private readonly CollisionObserver _collisionObserver;
+        private readonly BlockCollisionDetector _collisionDetector;
         private readonly MissChecker _missChecker;
         private readonly ObstacleValidator _obstacleValidator;
 
         public ReleasedBlockTracker(
-            CollisionObserver collisionObserver, 
+            BlockCollisionDetector collisionDetector, 
             MissChecker missChecker,
             ObstacleValidator obstacleValidator
         )
         {
-            _collisionObserver = collisionObserver;
+            _collisionDetector = collisionDetector;
             _missChecker = missChecker;
             _obstacleValidator = obstacleValidator;
         }
 
         public void StartTracking(Block block)
         {
-            _collisionObserver.StartTracking(block);
+            _collisionDetector.StartDetect(block);
             _missChecker.Run(block, _obstacleValidator.GetCorrect());
         }
         
         public void StopTracking()
         {
-            _collisionObserver.StopTracking();
+            _collisionDetector.StopDetect();
             _missChecker.Stop();
         }
     }
