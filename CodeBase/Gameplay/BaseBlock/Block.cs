@@ -1,4 +1,4 @@
-using CodeBase.Gameplay.Obstacle;
+using CodeBase.Gameplay.BlockTracking;
 using UnityEngine;
 
 namespace CodeBase.Gameplay.BaseBlock

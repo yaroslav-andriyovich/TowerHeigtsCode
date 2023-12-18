@@ -1,8 +1,6 @@
 using CodeBase.Gameplay.BlocksPool;
-using CodeBase.Gameplay.HoistingRopeLogic;
-using CodeBase.Gameplay.Services.BlockBind;
-using CodeBase.Gameplay.Services.BlockReleaseTimer;
-using CodeBase.Gameplay.Services.TransformDescend;
+using CodeBase.Gameplay.RopeManagement;
+using CodeBase.Gameplay.TransformDescend;
 using CodeBase.Infrastructure.States;
 using Cysharp.Threading.Tasks;
 using Zenject;
@@ -13,8 +11,8 @@ namespace CodeBase.Gameplay.States
     {
         private readonly LevelStateMachine _stateMachine;
         private readonly IBlockPool _blockPool;
-        private readonly BlockBinder _blockBinder;
-        private readonly ReleaseTimerController _releaseTimerController;
+        private readonly RopeAttachment _ropeAttachment;
+        private readonly ReleaseTimer _releaseTimer;
         private readonly RopeMovement _ropeMovement;
         private readonly TransformDescender _transformDescender;
 
@@ -24,24 +22,24 @@ namespace CodeBase.Gameplay.States
             LevelStateMachine stateMachine,
             InputActions inputActions, 
             IBlockPool blockPool,
-            HoistingRope hoistingRope,
-            BlockBinder blockBinder,
-            ReleaseTimerController releaseTimerController,
+            Rope rope,
+            RopeAttachment ropeAttachment,
+            ReleaseTimer releaseTimer,
             TransformDescender transformDescender
         )
         {
             _menuInput = inputActions.Menu;
             _stateMachine = stateMachine;
             _blockPool = blockPool;
-            _ropeMovement = hoistingRope.Movement;
-            _blockBinder = blockBinder;
-            _releaseTimerController = releaseTimerController;
+            _ropeMovement = rope.Movement;
+            _ropeAttachment = ropeAttachment;
+            _releaseTimer = releaseTimer;
             _transformDescender = transformDescender;
         }
 
         public void Enter()
         {
-            Initialize();
+            InitializeLevel();
             _menuInput.Enable();
         }
 
@@ -54,7 +52,7 @@ namespace CodeBase.Gameplay.States
                 StartGame().Forget();
         }
 
-        private void Initialize()
+        private void InitializeLevel()
         {
             _blockPool.CreatePool();
             _ropeMovement.ResetLocation();
@@ -64,13 +62,9 @@ namespace CodeBase.Gameplay.States
         private async UniTaskVoid StartGame()
         {
             _menuInput.Disable();
-            _blockBinder.BindNext();
+            _ropeAttachment.AttachBlock();
             await _ropeMovement.Drop();
-            _releaseTimerController.Start();
-            SwitchToLoopState();
-        }
-
-        private void SwitchToLoopState() => 
             _stateMachine.Enter<LevelLoopState>();
+        }
     }
 }

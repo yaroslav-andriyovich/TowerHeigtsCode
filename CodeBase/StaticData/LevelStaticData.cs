@@ -1,6 +1,5 @@
 using CodeBase.Data.Level;
 using CodeBase.Gameplay;
-using CodeBase.Gameplay.TowerLogic;
 using UnityEngine;
 
 namespace CodeBase.StaticData

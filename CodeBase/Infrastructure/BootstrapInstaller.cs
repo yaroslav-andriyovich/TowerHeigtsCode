@@ -22,7 +22,6 @@ namespace CodeBase.Infrastructure
 
             Container.Bind<LoadingCurtain>().FromComponentInNewPrefab(_loadingCurtain).AsSingle();
             Container.Bind<SceneLoader>().AsSingle();
-            Container.Bind<SceneReadyObserver>().AsSingle();
 
             Container.Bind<GameStateFactory>().AsSingle();
             BindGameStates();

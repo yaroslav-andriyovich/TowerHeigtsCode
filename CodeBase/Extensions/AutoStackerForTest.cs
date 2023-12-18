@@ -1,13 +1,10 @@
 using System.Collections;
 using CodeBase.Gameplay.BaseBlock;
 using CodeBase.Gameplay.BlocksPool;
-using CodeBase.Gameplay.HoistingRopeLogic;
-using CodeBase.Gameplay.Services;
-using CodeBase.Gameplay.Services.BlockBind;
-using CodeBase.Gameplay.Services.BlockMiss;
-using CodeBase.Gameplay.Services.Collision;
-using CodeBase.Gameplay.Services.TransformDescend;
-using CodeBase.Gameplay.TowerLogic;
+using CodeBase.Gameplay.BlockTracking;
+using CodeBase.Gameplay.RopeManagement;
+using CodeBase.Gameplay.TowerManagement;
+using CodeBase.Gameplay.TransformDescend;
 using UnityEngine;
 using Zenject;
 
@@ -18,26 +15,26 @@ namespace CodeBase.Extensions
         [SerializeField, Min(0f)] private float _interval;
         [SerializeField] private bool _printCount;
         
-        private HoistingRope _hoistingRope;
+        private Rope _rope;
         private Block _releasedBlock;
-        private BlockBinder _blockBinder;
+        private RopeAttachment _ropeAttachment;
         private CollisionValidator _collisionValidator;
         private MissChecker _missChecker;
 
         [Inject]
         public void Construct(
-            HoistingRope hoistingRope,
+            Rope rope,
             IBlockPool blockPool,
             Tower tower, 
             TransformDescender transformDescender,
-            BlockBinder blockBinder,
+            RopeAttachment ropeAttachment,
             CollisionValidator collisionValidator,
             MissChecker missChecker
         )
         {
-            _hoistingRope = hoistingRope;
+            _rope = rope;
             //_towerBlockAdditionController = new TowerBlockAdditionController(blockPool, tower, transformDescender);
-            _blockBinder = blockBinder;
+            _ropeAttachment = ropeAttachment;
             _collisionValidator = collisionValidator;
             _missChecker = missChecker;
         }
@@ -53,13 +50,13 @@ namespace CodeBase.Extensions
                 yield return WaitBlockBind();
                 yield return new WaitForSeconds(_interval);
                 
-                _releasedBlock = _hoistingRope.ReleaseBlock();
+                //_releasedBlock = _rope.ReleaseBlock();
                 _releasedBlock.Ground();
                 //_collisionValidator.Cleanup();
                 _missChecker.Stop();
                 //_towerBlockAdditionController.AddBlock(_releasedBlock, true);
                 _releasedBlock = null;
-                _blockBinder.BindNext();
+                _ropeAttachment.AttachBlock();
                 
                 ++count;
                 if (_printCount)
@@ -69,7 +66,7 @@ namespace CodeBase.Extensions
 
         private IEnumerator WaitBlockBind()
         {
-            while (!_hoistingRope.HasBlock)
+            while (!_rope.HasBlock)
             {
                 yield return null;
             }

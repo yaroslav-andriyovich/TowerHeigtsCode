@@ -1,16 +1,13 @@
+using CodeBase.Gameplay;
 using CodeBase.Gameplay.BaseBlock.Factory;
 using CodeBase.Gameplay.BlocksPool;
-using CodeBase.Gameplay.HoistingRopeLogic;
-using CodeBase.Gameplay.Services;
-using CodeBase.Gameplay.Services.BlockBind;
-using CodeBase.Gameplay.Services.BlockMiss;
-using CodeBase.Gameplay.Services.BlockReleaseTimer;
-using CodeBase.Gameplay.Services.Collision;
-using CodeBase.Gameplay.Services.Combo;
-using CodeBase.Gameplay.Services.TransformDescend;
+using CodeBase.Gameplay.BlockTracking;
+using CodeBase.Gameplay.Combo;
+using CodeBase.Gameplay.RopeManagement;
 using CodeBase.Gameplay.Stability;
 using CodeBase.Gameplay.States;
-using CodeBase.Gameplay.TowerLogic;
+using CodeBase.Gameplay.TowerManagement;
+using CodeBase.Gameplay.TransformDescend;
 using UnityEngine;
 using Zenject;
 
@@ -18,7 +15,7 @@ namespace CodeBase.Infrastructure.Scene
 {
     public class LevelInstaller : MonoInstaller
     {
-        [SerializeField] private HoistingRope _hoistingRope;
+        [SerializeField] private Rope _rope;
         [SerializeField] private Tower _tower;
         [SerializeField] private TransformsToDescendProvider _transformsToDescendProvider;
         [SerializeField] private ReleaseTimerView _releaseTimerView;
@@ -45,7 +42,7 @@ namespace CodeBase.Infrastructure.Scene
 
         private void BindCoreObjects()
         {
-            Container.Bind<HoistingRope>().FromInstance(_hoistingRope).AsSingle();
+            Container.Bind<Rope>().FromInstance(_rope).AsSingle();
             Container.Bind<Tower>().FromInstance(_tower).AsSingle();
             Container.Bind<TransformsToDescendProvider>().FromInstance(_transformsToDescendProvider).AsSingle();
             Container.Bind<ReleaseTimerView>().FromInstance(_releaseTimerView).AsSingle();
@@ -57,22 +54,26 @@ namespace CodeBase.Infrastructure.Scene
         {
             Container.BindInterfacesTo<BlockFactory>().AsSingle();
             Container.BindInterfacesTo<BlockPool>().AsSingle();
-            Container.Bind<ReleasedBlockTracker>().AsSingle();
-            Container.Bind<BlockBinder>().AsSingle();
+
             Container.Bind<Timer>().AsTransient();
-            Container.BindInterfacesAndSelfTo<ReleaseTimerController>().AsSingle();
-            Container.BindInterfacesAndSelfTo<MissChecker>().AsSingle();
-            Container.BindInterfacesAndSelfTo<OffsetChecker>().AsSingle();
-            Container.BindInterfacesAndSelfTo<ComboChecker>().AsSingle();
+            Container.BindInterfacesAndSelfTo<ReleaseTimer>().AsSingle();
+            Container.Bind<RopeAttachment>().AsSingle();
+
+            Container.BindInterfacesAndSelfTo<CollisionDetector>().AsSingle();
             Container.Bind<ObstacleValidator>().AsSingle();
-            Container.Bind<CollisionValidator>().AsSingle();
-            Container.Bind<LandingController>().AsSingle();
-            Container.BindInterfacesAndSelfTo<TransformDescender>().AsSingle();
-            Container.BindInterfacesAndSelfTo<StabilityController>().AsSingle();
-            
-            Container.BindInterfacesAndSelfTo<BlockCollisionDetector>().AsSingle();
+            Container.BindInterfacesAndSelfTo<MissChecker>().AsSingle();
+            Container.BindInterfacesAndSelfTo<BlockTracker>().AsSingle();
+
+            Container.BindInterfacesAndSelfTo<OffsetChecker>().AsSingle();
+            Container.BindInterfacesAndSelfTo<TowerStability>().AsSingle();
+            Container.Bind<BlockLanding>().AsSingle();
+            Container.BindInterfacesAndSelfTo<ComboSystem>().AsSingle();
             Container.Bind<CollisionHandler>().AsSingle();
-            Container.Bind<BlockHandler>().AsSingle();
+
+            Container.Bind<CollisionValidator>().AsSingle();
+            Container.BindInterfacesAndSelfTo<TransformDescender>().AsSingle();
+            
+            Container.BindInterfacesAndSelfTo<GameFlow>().AsSingle();
         }
     }
 }
