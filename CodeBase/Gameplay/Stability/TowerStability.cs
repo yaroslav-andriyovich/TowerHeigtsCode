@@ -1,6 +1,5 @@
-using System;
 using CodeBase.Data.Level;
-using CodeBase.Gameplay.TowerManagement;
+using CodeBase.Gameplay.Combo;
 using CodeBase.Services.StaticData;
 using UnityEngine;
 using Zenject;
@@ -9,88 +8,57 @@ namespace CodeBase.Gameplay.Stability
 {
     public class TowerStability : IInitializable
     {
-        public event Action OnCollapsed;
-        public bool IsStable => _weight < _config.maxAngle;
+        public bool IsStable => StabilityPercent > MinStability;
+        private float MinStability => StabilityCurve.keys[0].time;
+        public float MaxStability => StabilityCurve.keys[^1].time;
+        public float StabilityPercent
+        {
+            get => _stabilityPercent;
+            private set => _stabilityPercent = StabilityCurve.Evaluate(value);
+        }
+        public float InvertedStabilityPercent => 1f - StabilityPercent;
 
-        private readonly Tower _tower;
         private readonly IStaticDataService _staticDataService;
         private readonly StabilityView _stabilityView;
-        private readonly CameraShaker _cameraShaker;
-
-        private float MaxAngle => _config.maxAngle;
-        private float DestabilizationModifier => _config.destabilizationModifier;
-        private float StabilizationByCombo => _config.stabilizationByCombo;
-        private bool IsInsufficientBlocksNumber => _tower.Count <= _config.allowedBlocksNumber;
-
         private TowerStabilityData _config;
-        private float _weight;
+        private float _stabilityPercent;
 
-        public TowerStability(
-            IStaticDataService staticDataService, 
-            Tower tower, 
-            StabilityView stabilityView,
-            CameraShaker cameraShaker
-        )
+        private AnimationCurve StabilityCurve => _config.stabilityCurve;
+
+
+        public TowerStability(IStaticDataService staticDataService, StabilityView stabilityView)
         {
             _staticDataService = staticDataService;
-            _tower = tower;
             _stabilityView = stabilityView;
-            _cameraShaker = cameraShaker;
         }
 
-        public void Initialize() => 
+        public void Initialize()
+        {
             _config = _staticDataService.ForCurrentMode().TowerStabilityData;
-
-        public void Change(float offsetPercent, bool isCombo)
-        {
-            if (IsInsufficientBlocksNumber)
-                return;
-
-            RecalculateStability(offsetPercent, isCombo);
-            Apply();
-            TryCollapseTower();
+            Restore();
         }
-
-        private void RecalculateStability(float offsetPercent, bool isCombo)
+        
+        public void Recalculate(float offsetPercent, ComboResult comboResult)
         {
-            if (isCombo)
-                AddStabilityByCombo();
-            else if (IsNotMaxDestabilization())
-                ReduceStability(offsetPercent);
-        }
-
-        private void AddStabilityByCombo()
-        {
-            float stabilizedWeight = _weight - StabilizationByCombo;
-            SetWeight(stabilizedWeight);
-        }
-
-        private void SetWeight(float weight) => 
-            _weight = Mathf.Clamp(weight, min: 0f, MaxAngle);
-
-        private bool IsNotMaxDestabilization() => 
-            _weight < MaxAngle;
-
-        private void ReduceStability(float reductionValue)
-        {
-            float destabilizedWeight = _weight + reductionValue * DestabilizationModifier;
-            SetWeight(destabilizedWeight);
-        }
-
-        private void Apply()
-        {
-            _tower.ChangeRotationParams(maxAngle: _weight, speed: _weight / 2f);
-            _stabilityView.SetProgress(current: _weight, max: MaxAngle);
-        }
-
-        private void TryCollapseTower()
-        {
-            if (IsStable)
-                return;
+            if (!comboResult.isCombo)
+                ReduceStability(reduceValue01: offsetPercent);
+            else if (comboResult.isMaxStreak)
+                ImproveStability();
             
-            _tower.Collapse();
-            _cameraShaker.Shake();
-            OnCollapsed?.Invoke();
+            _stabilityView.SetProgress(InvertedStabilityPercent, MaxStability);
         }
+
+        public void ImproveStability() => 
+            StabilityPercent *= _config.improveMultiplier;
+
+        public void ReduceStability(float reduceValue01)
+        {
+            reduceValue01 = Mathf.Clamp01(reduceValue01);
+            
+            StabilityPercent -= reduceValue01 * _config.reduceMultiplier;
+        }
+
+        public void Restore() => 
+            _stabilityPercent = MaxStability;
     }
 }

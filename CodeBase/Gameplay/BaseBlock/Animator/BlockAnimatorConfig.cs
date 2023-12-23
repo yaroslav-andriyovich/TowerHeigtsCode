@@ -7,16 +7,10 @@ namespace CodeBase.Gameplay.BaseBlock.Animator
     public class BlockAnimatorConfig : ScriptableObject
     {
         [Header("Crash")]
-        [SerializeField] private float _crashPower;
-        [SerializeField] private float _crashTime;
-        [SerializeField] private Vector2 _crashEndPoint;
-        [SerializeField] private float _crashAngle;
-        [SerializeField] private Ease _crashEase;
-
-        public float crashPower => _crashPower;
-        public float crashTime => _crashTime;
-        public Vector2 crashEndPoint => _crashEndPoint;
-        public float crashAngle => _crashAngle;
-        public Ease crashEase => _crashEase;
+        public float crashPower = 4f;
+        public float crashTime = 1.25f;
+        public Vector2 crashEndPoint = new Vector2(2f, -6f);
+        public float crashAngle = 270f;
+        public Ease crashEase = Ease.Linear;
     }
 }

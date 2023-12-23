@@ -2,6 +2,7 @@ using CodeBase.Gameplay.BaseBlock;
 using CodeBase.Gameplay.BlocksPool;
 using CodeBase.Gameplay.TowerManagement;
 using CodeBase.Gameplay.TransformDescend;
+using CodeBase.Sounds;
 
 namespace CodeBase.Gameplay.BlockTracking
 {
@@ -10,40 +11,42 @@ namespace CodeBase.Gameplay.BlockTracking
         private readonly IBlockPool _blockPool;
         private readonly Tower _tower;
         private readonly TransformDescender _transformDescender;
+        private readonly SoundPlayer _soundPlayer;
 
         public BlockLanding(
             IBlockPool blockPool, 
             Tower tower, 
-            TransformDescender transformDescender
+            TransformDescender transformDescender,
+            SoundPlayer soundPlayer
             )
         {
             _blockPool = blockPool;
             _tower = tower;
             _transformDescender = transformDescender;
+            _soundPlayer = soundPlayer;
         }
 
-        public void Land(Block block, bool withCombo = false)
-        //public void Land(Block block, OffsetCheckerResult offset)
-        {
-            block.Ground();
-            AddBlockToTower(block, withCombo);
-            //AddBlockToTower(block, offset);
-        }
-
-        public void LandWithCrash(Block block, float offsetDirection) => 
-            block.Crash(offsetDirection);
-
-        private void AddBlockToTower(Block block, bool withCombo)
-        //private void AddBlockToTower(Block block, OffsetCheckerResult offset)
+        public void LandOnTower(Block block, CollisionOffset collisionOffset)
         {
             _transformDescender.CompleteMovement();
-            _tower.EnqueueBlock(block, withCombo);
-            //_tower.EnqueueBlock(block, offset);
-            DescendTowerBlocks();
+            AddBlockToTower(block, collisionOffset);
+            TryDescendTowerBlocks();
             _transformDescender.Move(block.Height);
         }
 
-        private void DescendTowerBlocks()
+        public void BounceToSide(Block block, float direction)
+        {
+            block.Bounce(direction);
+            _soundPlayer.PlayBlockBounce();
+        }
+
+        private void AddBlockToTower(Block block, CollisionOffset collisionOffset)
+        {
+            block.Ground();
+            _tower.PutBlock(block, collisionOffset.percent);
+        }
+
+        private void TryDescendTowerBlocks()
         {
             if (CanDescendOnlyBlocks())
                 _transformDescender.DescendCustomTransforms(_tower.GetBlockTransforms());

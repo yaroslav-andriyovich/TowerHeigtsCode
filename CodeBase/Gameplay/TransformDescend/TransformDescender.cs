@@ -15,7 +15,7 @@ namespace CodeBase.Gameplay.TransformDescend
 
         private List<Tween> _moveAnimations;
         private List<Transform> _transforms;
-        private float _descendTime;
+        private TransformDescenderData _config;
 
         public TransformDescender(
             TransformsToDescendProvider transformsToDescendProvider, 
@@ -24,16 +24,13 @@ namespace CodeBase.Gameplay.TransformDescend
         {
             _transformsToDescendProvider = transformsToDescendProvider;
             _staticDataService = staticDataService;
-        }
-
-        public void Initialize()
-        {
-            TransformDescenderData config = _staticDataService.ForCurrentMode().TransformDescenderData;
             
             _transforms = new List<Transform>();
             _moveAnimations = new List<Tween>();
-            _descendTime = config.descendTime;
         }
+
+        public void Initialize() => 
+            _config = _staticDataService.ForCurrentMode().TransformDescenderData;
 
         public void Dispose()
         {
@@ -72,7 +69,7 @@ namespace CodeBase.Gameplay.TransformDescend
 
         private Tween RunMovement(Transform transform, float distance) =>
             transform.
-                DOLocalMove(new Vector3(0f, -distance, 0f), _descendTime).
+                DOLocalMove(new Vector3(0f, -distance, 0f), _config.descendTime).
                 SetRelative().
                 SetEase(Ease.OutFlash);
 

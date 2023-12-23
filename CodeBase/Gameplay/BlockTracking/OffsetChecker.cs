@@ -1,4 +1,5 @@
 using CodeBase.Data.Level;
+using CodeBase.Gameplay.BaseBlock;
 using CodeBase.Services.StaticData;
 using UnityEngine;
 using Zenject;
@@ -9,25 +10,22 @@ namespace CodeBase.Gameplay.BlockTracking
     {
         private readonly IStaticDataService _staticDataService;
 
-        private float _maxOffsetPercent;
+        private OffsetCheckerData _config;
 
         public OffsetChecker(IStaticDataService staticDataService) => 
             _staticDataService = staticDataService;
 
-        public void Initialize()
-        {
-            OffsetCheckerData config = _staticDataService.ForCurrentMode().OffsetCheckerData;
-            _maxOffsetPercent = config.maxOffsetPercent;
-        }
+        public void Initialize() => 
+            _config = _staticDataService.ForCurrentMode().OffsetCheckerData;
 
-        public OffsetCheckerResult IsPermissibleOffset(IObstacle obstacle, Vector3 blockPosition)
+        public CollisionOffset CalculateOffset(IObstacle obstacle, Block block)
         {
-            float offset = GetObstacleOffset(obstacle, blockPosition);
+            float offset = GetObstacleOffset(obstacle, block.transform.position);
             float percentOffset = GetObstaclePercentOffset(obstacle, offset);
 
-            return new OffsetCheckerResult()
+            return new CollisionOffset()
             {
-                isPermissible = IsPermissible(percentOffset),
+                isAllowable = IsAllowable(percentOffset),
                 offsetValue = offset,
                 percent = percentOffset,
                 direction = GetOffsetDirection(offset)
@@ -53,16 +51,16 @@ namespace CodeBase.Gameplay.BlockTracking
             return percentOffset;
         }
 
-        private bool IsPermissible(float percentOffset) => 
-            percentOffset <= _maxOffsetPercent;
+        private bool IsAllowable(float percentOffset) => 
+            percentOffset <= _config.maxOffsetPercent;
 
         public float GetOffsetDirection(float offset) => 
             Mathf.Sign(offset);
     }
     
-    public struct OffsetCheckerResult
+    public struct CollisionOffset
     {
-        public bool isPermissible;
+        public bool isAllowable;
         public float offsetValue;
         public float percent;
         public float direction;

@@ -6,10 +6,10 @@ namespace CodeBase.Gameplay.TowerManagement
 {
     public class BlockCombiner
     {
-        public void Combine(Block block, IObstacle obstacle, bool isCombo = false) => 
-            AnchorOverObstacle(block, obstacle, isCombo);
+        public void Combine(Block block, IObstacle obstacle, bool withCombo = false) => 
+            AnchorOverObstacle(block, obstacle, withCombo);
 
-        private void AnchorOverObstacle(Block block, IObstacle obstacle, bool isCombo = false)
+        private void AnchorOverObstacle(Block block, IObstacle obstacle, bool withCombo = false)
         {
             Vector3 blockPosition = obstacle.transform.localPosition;
             
@@ -17,7 +17,7 @@ namespace CodeBase.Gameplay.TowerManagement
             float obstacleOffset = obstacle.Height / 2f;
             float anchorPointOffset = blockOffset + obstacleOffset;
 
-            if (!isCombo)
+            if (!withCombo)
                 blockPosition.x = block.transform.localPosition.x;
             
             blockPosition.y += anchorPointOffset;

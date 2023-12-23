@@ -1,4 +1,7 @@
+using CodeBase.Data.Level;
+using CodeBase.Services.StaticData;
 using UnityEngine;
+using Zenject;
 using Random = UnityEngine.Random;
 
 namespace CodeBase.Gameplay.TowerManagement
@@ -9,10 +12,16 @@ namespace CodeBase.Gameplay.TowerManagement
         [SerializeField, Range(-10f, 10f)] private float _angle;
         [SerializeField] private float _speed;
 
+        private IStaticDataService _staticDataService;
+        private TowerStabilityData _config;
         private float _direction;
 
-        private void Start() => 
+
+        private void Start()
+        {
+            _config = _staticDataService.ForCurrentMode().TowerStabilityData;
             ChangeRandomDirection();
+        }
 
         private void Update()
         {
@@ -20,11 +29,18 @@ namespace CodeBase.Gameplay.TowerManagement
             ChangeDirection();
             ChangeRotation();
         }
+        
+        [Inject]
+        public void Construct(IStaticDataService staticDataService) => 
+            _staticDataService = staticDataService;
 
-        public void ChangeParams(float maxAngle, float speed)
+        public void RecalculateAngle(float progressToMaxAngle)
         {
-            _maxAngle = maxAngle;
-            _speed = speed;
+            progressToMaxAngle = Mathf.Clamp01(progressToMaxAngle);
+            progressToMaxAngle = Mathf.Max(_config.minDeviationPercent, progressToMaxAngle);
+            
+            _maxAngle = _config.maxAngle * progressToMaxAngle;
+            _speed = _maxAngle / 2f;
         }
 
         private void ChangeRandomDirection() => 

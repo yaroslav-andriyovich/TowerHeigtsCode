@@ -4,7 +4,7 @@ using UnityEngine.Rendering.PostProcessing;
 namespace CodeBase.Data.Level
 {
     [Serializable]
-    public class BlockMissCheckerData
+    public class MissDetectorData
     {
         [Min(0f)] public float deadZoneDistance = 3f;
     }

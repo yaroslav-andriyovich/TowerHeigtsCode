@@ -7,7 +7,7 @@ namespace CodeBase.Infrastructure.States.GameStates
 {
     public class BootstrapState : IGameState, IState
     {
-        private const string MainSceneName = "Main";
+        private const string MainScene = "Main";
         
         private readonly GameStateMachine _stateMachine;
         private readonly SceneLoader _sceneLoader;
@@ -28,8 +28,9 @@ namespace CodeBase.Infrastructure.States.GameStates
         {
             InitializeApplication();
             LoadStaticData();
-
-            await _sceneLoader.Load(MainSceneName);
+            
+            await _sceneLoader.Load(MainScene);
+            
             LoadProgress();
         }
 

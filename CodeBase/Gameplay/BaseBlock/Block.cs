@@ -15,7 +15,7 @@ namespace CodeBase.Gameplay.BaseBlock
         public abstract void EnableFalling();
         public abstract void DisableFalling();
         public abstract void Ground();
-        public abstract void Crash(float offsetDirection);
+        public abstract void Bounce(float offsetDirection);
         public abstract void Collapse(float collapseDirection);
     }
 }

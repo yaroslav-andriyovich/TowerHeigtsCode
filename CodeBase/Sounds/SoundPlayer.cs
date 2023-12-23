@@ -6,7 +6,7 @@ namespace CodeBase.Sounds
     {
         [SerializeField] private AudioSource _combo;
         [SerializeField] private AudioSource _miss;
-        [SerializeField] private AudioSource _gameOver;
+        [SerializeField] private AudioSource _bounce;
         
         private void Awake() => 
             DontDestroyOnLoad(this);
@@ -18,7 +18,7 @@ namespace CodeBase.Sounds
         public void PlayMiss() => 
             _miss.Play();
 
-        public void PlayGameOver() => 
-            _gameOver.Play();
+        public void PlayBlockBounce() => 
+            _bounce.Play();
     }
 }

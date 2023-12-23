@@ -1,5 +1,5 @@
+using System;
 using CodeBase.Data.Level;
-using CodeBase.Gameplay.TowerManagement;
 using CodeBase.Services.StaticData;
 using CodeBase.Sounds;
 using UnityEngine;
@@ -9,57 +9,69 @@ namespace CodeBase.Gameplay.Combo
 {
     public class ComboSystem : IInitializable
     {
-        public int Count { get; private set; }
-        public float Streak { get; private set; }
+        public event Action<ComboResult> OnCombo;
+        public int Streak
+        {
+            get => _streak;
+            private set => _streak = Mathf.Min(value, _config.maxStreak);
+        }
+        public bool IsMaxStreak => Streak >= _config.maxStreak;
 
         private readonly IStaticDataService _staticDataService;
-        private readonly Tower _tower;
         private readonly SoundPlayer _soundPlayer;
 
-        private float _maxComboOffsetPercent;
+        private ComboCheckerData _config;
+        private int _streak;
 
-        public ComboSystem(IStaticDataService staticDataService, Tower tower, SoundPlayer soundPlayer)
+        public ComboSystem(IStaticDataService staticDataService, SoundPlayer soundPlayer)
         {
             _staticDataService = staticDataService;
-            _tower = tower;
             _soundPlayer = soundPlayer;
         }
 
-        public void Initialize()
-        {
-            ComboCheckerData config = _staticDataService.ForCurrentMode().ComboCheckerData;
-            _maxComboOffsetPercent = config.maxComboOffsetPercent;
-        }
+        public void Initialize() => 
+            _config = _staticDataService.ForCurrentMode().ComboCheckerData;
 
-        public bool CheckCombo(float offsetPercent)
+        public ComboResult RegisterCombo(float offsetPercent)
         {
-            bool isCombo = IsCombo(offsetPercent); 
+            bool isCombo = IsCombo(offsetPercent);
             
-            if (isCombo)
-                _soundPlayer.PlayComboHit();
-
-            UpdateStreak(isCombo);
-            
-            return isCombo;
-        }
-
-        private bool IsCombo(float offsetPercent) => 
-            !_tower.IsEmpty && IsPermissibleOffsetPercent(offsetPercent);
-
-        private bool IsPermissibleOffsetPercent(float percentOffset) => 
-            percentOffset <= _maxComboOffsetPercent;
-
-        private void UpdateStreak(bool isCombo)
-        {
             if (isCombo)
             {
-                float streakIncrement = ++Count * 0.1f;
-                Streak = Mathf.Clamp(Streak + streakIncrement, 1f, 2f);
-                return;
+                AddStreak();
+                _soundPlayer.PlayComboHit();
             }
+            else
+                Reset();
 
-            Count = 0;
-            Streak = 1f;
+            ComboResult result = new ComboResult()
+            {
+                isCombo = isCombo,
+                isMaxStreak = IsMaxStreak,
+                streak = Streak
+            };
+
+            OnCombo?.Invoke(result);
+            return result;
         }
+
+        public void Reset() => 
+            _streak = 0;
+
+        private bool IsCombo(float offsetPercent) => 
+            IsAllowableOffsetPercent(offsetPercent);
+
+        private bool IsAllowableOffsetPercent(float percentOffset) => 
+            percentOffset <= _config.maxOffsetPercent;
+
+        private void AddStreak() => 
+            Streak += 1;
+    }
+
+    public struct ComboResult
+    {
+        public bool isCombo;
+        public bool isMaxStreak;
+        public float streak;
     }
 }

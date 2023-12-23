@@ -1,8 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CodeBase.Extensions;
 using CodeBase.Gameplay.BaseBlock;
 using CodeBase.Gameplay.BlockTracking;
+using CodeBase.Gameplay.Combo;
+using CodeBase.Gameplay.Stability;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Zenject;
@@ -16,40 +19,53 @@ namespace CodeBase.Gameplay.TowerManagement
         [Space]
         [SerializeField] private AudioSource _collapseAudio;
         [SerializeField, Min(0)] private int _collapseMillisecondsInterval;
-        
+
+        public event Action OnCollapsed;
         public bool IsEmpty => _blocks.Count == 0;
         public int Count => _blocks.Count;
         
         private List<Block> _blocks;
         private BlockCombiner _blockCombiner;
         private OffsetChecker _offsetChecker;
+        private TowerStability _towerStability;
+        private ComboSystem _comboSystem;
 
-        private void Awake()
-        {
+        private void Awake() => 
             _blocks = new List<Block>();
-            _blockCombiner = new BlockCombiner();
-        }
 
         [Inject]
-        public void Construct(OffsetChecker offsetChecker) => 
-            _offsetChecker = offsetChecker;
-
-        public void EnqueueBlock(Block block, bool isCombo = false)
+        public void Construct(
+            BlockCombiner blockCombiner, 
+            OffsetChecker offsetChecker,
+            TowerStability towerStability,
+            ComboSystem comboSystem
+            )
         {
-            SetBlockParent(block, transform);
-            CombineBlock(block, isCombo);
-            _blocks.Add(block);
+            _blockCombiner = blockCombiner;
+            _offsetChecker = offsetChecker;
+            _towerStability = towerStability;
+            _comboSystem = comboSystem;
         }
 
-        public Block DequeueBlock()
+        public void PutBlock(Block block, float offsetPercent)
+        {
+            ComboResult comboResult = _comboSystem.RegisterCombo(offsetPercent);
+            
+            block.transform.SetParent(transform);
+            CombineBlock(block, comboResult.isCombo);
+            _blocks.Add(block);
+            RecalculateStability(offsetPercent, comboResult);
+        }
+
+        public Block TakeLastBlock()
         {
             if (IsEmpty)
-                return null;
+                throw new InvalidOperationException("Tower is empty!");
 
             Block block = GetLowestBlock();
-            
+
             _blocks.Remove(block);
-            SetBlockParent(block, null);
+            block.transform.SetParent(null);
 
             return block;
         }
@@ -59,47 +75,51 @@ namespace CodeBase.Gameplay.TowerManagement
 
         public Block GetHighestBlock() => 
             IsEmpty 
-                ? null
+                ? throw new InvalidOperationException("Tower is empty!")
                 : _blocks[^1];
 
         public IObstacle GetFoundation() => 
             _foundation as IObstacle;
 
-        public void ChangeRotationParams(float maxAngle, float speed) => 
-            _rotator.ChangeParams(maxAngle, speed);
-
         public void Collapse()
         {
             _rotator.DisableComponent();
-            HideFoundation();
+            _foundation.Hide();
             _collapseAudio.Play();
             CollapseBlocks(_blocks).Forget();
+            OnCollapsed?.Invoke();
         }
-        
-        private void SetBlockParent(Block block, Transform parent) => 
-            block.transform.parent = parent;
 
-        private void CombineBlock(Block block, bool isCombo)
+        private void CombineBlock(Block block, bool withCombo)
         {
             if (IsEmpty)
                 CombineWithFoundation(block);
             else
-                CombineWithHighestBlock(block, isCombo);
+                CombineWithHighestBlock(block, withCombo);
         }
 
         private void CombineWithFoundation(Block block) => 
             _blockCombiner.Combine(block, GetFoundation());
 
-        private void CombineWithHighestBlock(Block block, bool isCombo) => 
-            _blockCombiner.Combine(block, GetHighestBlock(), isCombo);
-        
+        private void CombineWithHighestBlock(Block block, bool withCombo) => 
+            _blockCombiner.Combine(block, GetHighestBlock(), withCombo);
+
+        private void RecalculateStability(float offsetPercent, ComboResult comboResult)
+        {
+            if (Count <= 1)
+                return;
+            
+            _towerStability.Recalculate(offsetPercent, comboResult);
+            _rotator.RecalculateAngle(progressToMaxAngle: _towerStability.InvertedStabilityPercent);
+
+            if (!_towerStability.IsStable)
+                Collapse();
+        }
+
         private Block GetLowestBlock() => 
             IsEmpty 
-                ? null
+                ? throw new InvalidOperationException("Tower is empty!")
                 : _blocks[0];
-        
-        private void HideFoundation() => 
-            _foundation.gameObject.SetActive(false);
 
         private async UniTaskVoid CollapseBlocks(IReadOnlyList<Block> blocks)
         {

@@ -18,12 +18,18 @@ namespace CodeBase.Infrastructure
 
         public async UniTask Show()
         {
+            if (isActiveAndEnabled)
+                return;
+            
             gameObject.MakeActive();
             await ChangeVisibility(true);
         }
 
         public async UniTask Hide()
         {
+            if (!isActiveAndEnabled)
+                return;
+            
             await ChangeVisibility(false);
             gameObject.MakeInactive();
         }

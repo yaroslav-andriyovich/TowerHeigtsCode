@@ -8,7 +8,7 @@ using Zenject;
 
 namespace CodeBase.Gameplay.BlockTracking
 {
-    public class MissChecker : IInitializable, IDisposable, ITickable
+    public class MissDetector : IInitializable, IDisposable, ITickable
     {
         public event Action OnMiss;
         public bool Enabled => _block != null && _obstacle != null;
@@ -19,9 +19,9 @@ namespace CodeBase.Gameplay.BlockTracking
 
         private Transform _block;
         private Transform _obstacle;
-        private float _deadZoneDistance;
+        private MissDetectorData _config;
 
-        public MissChecker(
+        public MissDetector(
             IStaticDataService staticDataService,
             ObstacleValidator obstacleValidator,
             SoundPlayer soundPlayer
@@ -32,11 +32,8 @@ namespace CodeBase.Gameplay.BlockTracking
             _soundPlayer = soundPlayer;
         }
 
-        public void Initialize()
-        {
-            BlockMissCheckerData config = _staticDataService.ForCurrentMode().BlockMissCheckerData;
-            _deadZoneDistance = config.deadZoneDistance;
-        }
+        public void Initialize() => 
+            _config = _staticDataService.ForCurrentMode()._missDetectorData;
 
         public void Dispose() => 
             Stop();
@@ -81,7 +78,7 @@ namespace CodeBase.Gameplay.BlockTracking
 
         private bool BlockAboveObstacle(Vector3 blockPosition, Vector3 obstaclePosition)
         {
-            float waterline = obstaclePosition.y - _deadZoneDistance;
+            float waterline = obstaclePosition.y - _config.deadZoneDistance;
             float blockHeight = blockPosition.y;
             
             return waterline < blockHeight;

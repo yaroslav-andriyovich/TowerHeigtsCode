@@ -13,7 +13,7 @@ namespace CodeBase.StaticData
         [Space]
         public HoistingRopeData HoistingRopeData;
         [Space]
-        public BlockMissCheckerData BlockMissCheckerData;
+        public MissDetectorData _missDetectorData;
         [Space]
         public OffsetCheckerData OffsetCheckerData;
         [Space]
@@ -24,5 +24,7 @@ namespace CodeBase.StaticData
         public TransformDescenderData TransformDescenderData;
         [Space]
         public ReleaseTimerData ReleaseTimerData;
+        [Space]
+        public CameraShakerData CameraShakerData;
     }
 }

@@ -9,18 +9,18 @@ namespace CodeBase.Gameplay.States
 {
     public class LevelFailState : ILevelState, IState
     {
-        private readonly SoundPlayer _soundPlayer;
         private readonly BlockTracker _blockTracker;
         private readonly ReleaseTimer _releaseTimer;
-        private readonly RopeMovement _ropeMovement;
         private readonly GameFlow _gameFlow;
+        private readonly RopeMovement _ropeMovement;
+        private readonly SoundPlayer _soundPlayer;
 
         public LevelFailState(
-            SoundPlayer soundPlayer,
             BlockTracker blockTracker,
             ReleaseTimer releaseTimer,
+            GameFlow gameFlow,
             Rope rope,
-            GameFlow gameFlow
+            SoundPlayer soundPlayer
         )
         {
             _soundPlayer = soundPlayer;
@@ -32,12 +32,12 @@ namespace CodeBase.Gameplay.States
 
         public void Enter()
         {
-            _gameFlow.Cleanup();
             _blockTracker.StopTracking();
             _releaseTimer.Stop();
+            _gameFlow.Cleanup();
 
             _ropeMovement.Raise().Forget();
-            _soundPlayer.PlayGameOver();
+            _soundPlayer.PlayBlockBounce();
             Debug.Log("Game Over!");
         }
 

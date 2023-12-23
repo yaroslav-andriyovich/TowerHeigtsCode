@@ -1,10 +1,8 @@
 using System.Collections;
 using CodeBase.Gameplay.BaseBlock;
-using CodeBase.Gameplay.BlocksPool;
 using CodeBase.Gameplay.BlockTracking;
 using CodeBase.Gameplay.RopeManagement;
 using CodeBase.Gameplay.TowerManagement;
-using CodeBase.Gameplay.TransformDescend;
 using UnityEngine;
 using Zenject;
 
@@ -14,59 +12,80 @@ namespace CodeBase.Extensions
     {
         [SerializeField, Min(0f)] private float _interval;
         [SerializeField] private bool _printCount;
-        
+
+        private CollisionDetector _collisionDetector;
+        private BlockTracker _blockTracker;
         private Rope _rope;
-        private Block _releasedBlock;
-        private RopeAttachment _ropeAttachment;
-        private CollisionValidator _collisionValidator;
-        private MissChecker _missChecker;
+        private CollisionHandler _collisionHandler;
+        private Tower _tower;
+
+        private Block _block;
 
         [Inject]
         public void Construct(
+            CollisionHandler collisionHandler,
+            BlockTracker blockTracker,
             Rope rope,
-            IBlockPool blockPool,
-            Tower tower, 
-            TransformDescender transformDescender,
-            RopeAttachment ropeAttachment,
-            CollisionValidator collisionValidator,
-            MissChecker missChecker
+            CollisionDetector collisionDetector,
+            Tower tower
         )
         {
+            _collisionDetector = collisionDetector;
+            _blockTracker = blockTracker;
             _rope = rope;
-            //_towerBlockAdditionController = new TowerBlockAdditionController(blockPool, tower, transformDescender);
-            _ropeAttachment = ropeAttachment;
-            _collisionValidator = collisionValidator;
-            _missChecker = missChecker;
+            _collisionHandler = collisionHandler;
+            _tower = tower;
         }
 
-        private IEnumerator Start()
+        private void Start()
+        {
+            _collisionDetector.Dispose();
+            _blockTracker.Dispose();
+            _rope.Movement.DisableComponent();
+            _rope.OnAttached += OnBlockAttached;
+            _tower.OnCollapsed += () => gameObject.MakeInactive();
+
+            StartCoroutine(Procedure());
+        }
+
+        private void OnDestroy() => 
+            _rope.OnAttached -= OnBlockAttached;
+
+        private void OnBlockAttached(Block block) => 
+            _block = block;
+
+        private IEnumerator Procedure()
         {
             int count = 0;
 
-            yield return WaitBlockBind();
+            yield return WaitRopeAttachment();
 
             while (enabled)
             {
-                yield return WaitBlockBind();
                 yield return new WaitForSeconds(_interval);
+                yield return WaitRopeAttachment();
+
+                CollisionOffset collisionOffset = new CollisionOffset()
+                {
+                    isAllowable = true,
+                    offsetValue = 0f,
+                    percent = Random.Range(0f, 0.13f)
+                };
                 
-                //_releasedBlock = _rope.ReleaseBlock();
-                _releasedBlock.Ground();
-                //_collisionValidator.Cleanup();
-                _missChecker.Stop();
-                //_towerBlockAdditionController.AddBlock(_releasedBlock, true);
-                _releasedBlock = null;
-                _ropeAttachment.AttachBlock();
-                
+                _rope.ReleaseBlock();
+                //_collisionHandler.LandBlockOnTower(_block, collisionOffset);
+
                 ++count;
                 if (_printCount)
                     Debug.Log(++count);
             }
+            
+            _block = null;
         }
 
-        private IEnumerator WaitBlockBind()
+        private IEnumerator WaitRopeAttachment()
         {
-            while (!_rope.HasBlock)
+            while (_block == null)
             {
                 yield return null;
             }

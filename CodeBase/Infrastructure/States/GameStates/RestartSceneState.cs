@@ -1,4 +1,5 @@
 using CodeBase.Infrastructure.Scene.Loading;
+using Cysharp.Threading.Tasks;
 
 namespace CodeBase.Infrastructure.States.GameStates
 {
@@ -6,22 +7,29 @@ namespace CodeBase.Infrastructure.States.GameStates
     {
         private readonly SceneLoader _sceneLoader;
         private readonly LoadingCurtain _loadingCurtain;
+        private readonly GameStateMachine _gameStateMachine;
 
         public RestartSceneState(
             SceneLoader sceneLoader, 
-            LoadingCurtain loadingCurtain)
+            LoadingCurtain loadingCurtain,
+            GameStateMachine gameStateMachine)
         {
             _sceneLoader = sceneLoader;
             _loadingCurtain = loadingCurtain;
+            _gameStateMachine = gameStateMachine;
         }
 
         public async void Enter()
         {
             await _loadingCurtain.Show();
             await _sceneLoader.Reload();
+            
+            _gameStateMachine.Enter<GameplayState>();
         }
 
-        public async void Exit() => 
+        public async void Exit()
+        {
             await _loadingCurtain.Hide();
+        }
     }
 }

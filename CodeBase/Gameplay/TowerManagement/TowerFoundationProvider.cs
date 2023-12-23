@@ -1,3 +1,4 @@
+using CodeBase.Extensions;
 using CodeBase.Gameplay.BlockTracking;
 using UnityEngine;
 
@@ -13,5 +14,8 @@ namespace CodeBase.Gameplay.TowerManagement
 
         private void Awake() => 
             _collider = GetComponent<BoxCollider>();
+
+        public void Hide() => 
+            gameObject.MakeInactive();
     }
 }

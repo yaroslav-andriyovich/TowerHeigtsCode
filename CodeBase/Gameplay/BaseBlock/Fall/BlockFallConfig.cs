@@ -6,24 +6,15 @@ namespace CodeBase.Gameplay.BaseBlock.Fall
     public class BlockFallConfig : ScriptableObject
     {
         [Header("Horizontal")]
-        [SerializeField] private float _horizontalMaxSpeed;
-        [SerializeField] private float _horizontalGravity;
-
+        public float horizontalMaxSpeed = 0.025f;
+        public float horizontalGravity = 0.012f;
+        
         [Header("Vertical")]
-        [SerializeField] private float _verticalGravity;
-        [SerializeField] private float _startVerticalSpeed;
-        [SerializeField] public float _maxVerticalSpeed;
-
+        public float verticalGravity = -0.225f;
+        public float startVerticalSpeed = -0.015f;
+        public float maxVerticalSpeed = -0.12f;
+        
         [Header("Rotation")]
-        [SerializeField, Min(0f)] private float _rotationSpeed;
-
-        public float horizontalMaxSpeed => _horizontalMaxSpeed;
-        public float horizontalGravity => _horizontalGravity;
-        
-        public float verticalGravity => _verticalGravity;
-        public float startVerticalSpeed => _startVerticalSpeed;
-        public float maxVerticalSpeed => _maxVerticalSpeed;
-        
-        public float rotationSpeed => _rotationSpeed;
+        public float rotationSpeed = 3f;
     }
 }

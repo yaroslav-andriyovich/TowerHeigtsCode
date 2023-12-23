@@ -38,7 +38,7 @@ namespace CodeBase.Gameplay.RopeManagement
 
         private Block GetBlock() => 
             _blockPool.IsEmpty 
-                ? _tower.DequeueBlock() 
+                ? _tower.TakeLastBlock() 
                 : _blockPool.TakeBlock();
     }
 }

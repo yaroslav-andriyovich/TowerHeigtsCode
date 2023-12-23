@@ -29,7 +29,7 @@ namespace CodeBase.Gameplay.BaseBlock.Fall
         {
             if (Time.timeScale == 0f)
                 return;
-            
+
             float deltaTime = Time.deltaTime;
 
             _horizontalMover.Move(deltaTime);

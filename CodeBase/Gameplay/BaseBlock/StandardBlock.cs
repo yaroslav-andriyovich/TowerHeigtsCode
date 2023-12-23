@@ -33,10 +33,11 @@ namespace CodeBase.Gameplay.BaseBlock
             _hitAudio.Play();
         }
 
-        public override void Crash(float offsetDirection)
+        public override void Bounce(float offsetDirection)
         {
             DisableFalling();
             _animator.Crash(offsetDirection);
+            _hitAudio.Play();
         }
         
         public override void Collapse(float collapseDirection)

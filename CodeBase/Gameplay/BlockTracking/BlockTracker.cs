@@ -1,27 +1,29 @@
 using System;
 using CodeBase.Gameplay.BaseBlock;
 using CodeBase.Gameplay.RopeManagement;
+using Zenject;
 
 namespace CodeBase.Gameplay.BlockTracking
 {
-    public class BlockTracker : IDisposable
+    public class BlockTracker : IInitializable, IDisposable
     {
         private readonly Rope _rope;
         private readonly CollisionDetector _collisionDetector;
-        private readonly MissChecker _missChecker;
+        private readonly MissDetector _missDetector;
 
         public BlockTracker(
             Rope rope, 
             CollisionDetector collisionDetector,
-            MissChecker missChecker
+            MissDetector missDetector
             )
         {
             _rope = rope;
             _collisionDetector = collisionDetector;
-            _missChecker = missChecker;
-            
-            _rope.OnReleased += OnBlockReleased;
+            _missDetector = missDetector;
         }
+
+        public void Initialize() => 
+            _rope.OnReleased += OnBlockReleased;
 
         public void Dispose() => 
             _rope.OnReleased -= OnBlockReleased;
@@ -29,13 +31,13 @@ namespace CodeBase.Gameplay.BlockTracking
         public void StopTracking()
         {
             _collisionDetector.Cleanup();
-            _missChecker.Stop();
+            _missDetector.Stop();
         }
 
         private void OnBlockReleased(Block block)
         {
             _collisionDetector.Register(block);
-            _missChecker.Run(block);
+            _missDetector.Run(block);
         }
     }
 }
