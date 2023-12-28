@@ -24,7 +24,7 @@ namespace CodeBase.Gameplay.States
         {
             Time.timeScale = 0f;
             _cameraBlur.FastBlur();
-            _windowService.Open<PauseWindow>();
+            _windowService.Show<PauseWindow>();
             Debug.Log("Pause.");
         }
 
@@ -32,7 +32,7 @@ namespace CodeBase.Gameplay.States
         {
             Time.timeScale = 1f;
             _cameraBlur.FastFocus();
-            _windowService.Close<PauseWindow>();
+            _windowService.Hide<PauseWindow>();
             Debug.Log("Game resumed.");
         }
     }

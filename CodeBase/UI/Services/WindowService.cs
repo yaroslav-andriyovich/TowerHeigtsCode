@@ -8,22 +8,22 @@ namespace CodeBase.UI.Services
     public class WindowService : IWindowService, IDisposable
     {
         private readonly WindowFactory _windowFactory;
-        private readonly Dictionary<Type, WindowBase> _openedWindows;
+        private readonly Dictionary<Type, WindowBase> _displayedWindows;
 
         protected WindowService(WindowFactory windowFactory)
         {
             _windowFactory = windowFactory;
-            _openedWindows = new Dictionary<Type, WindowBase>();
+            _displayedWindows = new Dictionary<Type, WindowBase>();
         }
 
         public void Dispose() => 
-            _openedWindows.Clear();
+            _displayedWindows.Clear();
 
-        public void Open<TWindow>() where TWindow : WindowBase
+        public void Show<TWindow>() where TWindow : WindowBase
         {
             Type windowType = typeof(TWindow);
             
-            if (_openedWindows.ContainsKey(windowType))
+            if (_displayedWindows.ContainsKey(windowType))
             {
                 Debug.LogError($"Window {windowType} already registered!");
                 return;
@@ -33,24 +33,24 @@ namespace CodeBase.UI.Services
             
             window.Show();
 
-            _openedWindows.Add(windowType, window);
+            _displayedWindows.Add(windowType, window);
         }
 
-        public void Close<TWindow>() where TWindow : WindowBase
+        public void Hide<TWindow>() where TWindow : WindowBase
         {
             Type windowType = typeof(TWindow);
 
-            if (!_openedWindows.ContainsKey(windowType))
+            if (!_displayedWindows.ContainsKey(windowType))
             {
                 Debug.LogError($"Window {windowType} not registered!");
                 return;
             }
             
-            WindowBase window = _openedWindows[windowType];
+            WindowBase window = _displayedWindows[windowType];
             
             window.Hide();
             
-            _openedWindows.Remove(typeof(TWindow));
+            _displayedWindows.Remove(windowType);
         }
     }
 }

@@ -4,7 +4,7 @@ namespace CodeBase.UI.Services
 {
     public interface IWindowService
     {
-        void Open<TWindow>() where TWindow : WindowBase;
-        void Close<TWindow>() where TWindow : WindowBase;
+        void Show<TWindow>() where TWindow : WindowBase;
+        void Hide<TWindow>() where TWindow : WindowBase;
     }
 }
