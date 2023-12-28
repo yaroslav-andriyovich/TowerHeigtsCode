@@ -2,6 +2,7 @@ using System.Collections;
 using CodeBase.Gameplay.BaseBlock;
 using CodeBase.Gameplay.BlockTracking;
 using CodeBase.Gameplay.RopeManagement;
+using CodeBase.Gameplay.Stability;
 using CodeBase.Gameplay.TowerManagement;
 using UnityEngine;
 using Zenject;
@@ -17,7 +18,7 @@ namespace CodeBase.Extensions
         private BlockTracker _blockTracker;
         private Rope _rope;
         private CollisionHandler _collisionHandler;
-        private Tower _tower;
+        private TowerCollapse _tower;
 
         private Block _block;
 
@@ -27,7 +28,7 @@ namespace CodeBase.Extensions
             BlockTracker blockTracker,
             Rope rope,
             CollisionDetector collisionDetector,
-            Tower tower
+            TowerCollapse tower
         )
         {
             _collisionDetector = collisionDetector;

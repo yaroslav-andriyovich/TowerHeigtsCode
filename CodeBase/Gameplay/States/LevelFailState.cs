@@ -1,7 +1,7 @@
 using CodeBase.Gameplay.BlockTracking;
+using CodeBase.Gameplay.CameraManagement;
 using CodeBase.Gameplay.RopeManagement;
 using CodeBase.Infrastructure.States;
-using CodeBase.Sounds;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -13,21 +13,21 @@ namespace CodeBase.Gameplay.States
         private readonly ReleaseTimer _releaseTimer;
         private readonly GameFlow _gameFlow;
         private readonly RopeMovement _ropeMovement;
-        private readonly SoundPlayer _soundPlayer;
+        private readonly CameraBlur _cameraBlur;
 
         public LevelFailState(
             BlockTracker blockTracker,
             ReleaseTimer releaseTimer,
             GameFlow gameFlow,
             Rope rope,
-            SoundPlayer soundPlayer
+            CameraBlur cameraBlur
         )
         {
-            _soundPlayer = soundPlayer;
             _blockTracker = blockTracker;
             _releaseTimer = releaseTimer;
             _ropeMovement = rope.Movement;
             _gameFlow = gameFlow;
+            _cameraBlur = cameraBlur;
         }
 
         public void Enter()
@@ -37,7 +37,7 @@ namespace CodeBase.Gameplay.States
             _gameFlow.Cleanup();
 
             _ropeMovement.Raise().Forget();
-            _soundPlayer.PlayBlockBounce();
+            _cameraBlur.SmoothBlur();
             Debug.Log("Game Over!");
         }
 

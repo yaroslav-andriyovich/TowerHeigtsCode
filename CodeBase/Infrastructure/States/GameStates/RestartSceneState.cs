@@ -1,5 +1,4 @@
 using CodeBase.Infrastructure.Scene.Loading;
-using Cysharp.Threading.Tasks;
 
 namespace CodeBase.Infrastructure.States.GameStates
 {
@@ -12,7 +11,8 @@ namespace CodeBase.Infrastructure.States.GameStates
         public RestartSceneState(
             SceneLoader sceneLoader, 
             LoadingCurtain loadingCurtain,
-            GameStateMachine gameStateMachine)
+            GameStateMachine gameStateMachine
+            )
         {
             _sceneLoader = sceneLoader;
             _loadingCurtain = loadingCurtain;

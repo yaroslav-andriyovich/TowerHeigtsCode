@@ -3,7 +3,6 @@ using CodeBase.Gameplay.BlockTracking;
 using CodeBase.Gameplay.RopeManagement;
 using CodeBase.Gameplay.Stability;
 using CodeBase.Gameplay.States;
-using CodeBase.Gameplay.TowerManagement;
 using Zenject;
 
 namespace CodeBase.Gameplay
@@ -14,24 +13,21 @@ namespace CodeBase.Gameplay
         private readonly CollisionHandler _collisionHandler;
         private readonly RopeAttachment _ropeAttachment;
         private readonly MissDetector _missDetector;
-        private readonly Tower _tower;
-        private readonly CameraShaker _cameraShaker;
+        private readonly TowerCollapse _towerCollapse;
 
         public GameFlow(
             LevelStateMachine levelStateMachine,
             CollisionHandler collisionHandler,
             RopeAttachment ropeAttachment,
             MissDetector missDetector,
-            Tower tower,
-            CameraShaker cameraShaker
+            TowerCollapse towerCollapse
             )
         {
             _levelStateMachine = levelStateMachine;
             _collisionHandler = collisionHandler;
             _ropeAttachment = ropeAttachment;
             _missDetector = missDetector;
-            _tower = tower;
-            _cameraShaker = cameraShaker;
+            _towerCollapse = towerCollapse;
         }
 
         public void Initialize()
@@ -39,7 +35,7 @@ namespace CodeBase.Gameplay
             _collisionHandler.OnGoodCollision += _ropeAttachment.AttachBlock;
             _collisionHandler.OnBadCollision += FailGame;
             _missDetector.OnMiss += FailGame;
-            _tower.OnCollapsed += FailGameByTowerCollapse;
+            _towerCollapse.OnCollapsed += FailGame;
         }
 
         public void Dispose() => 
@@ -50,16 +46,10 @@ namespace CodeBase.Gameplay
             _collisionHandler.OnGoodCollision -= _ropeAttachment.AttachBlock;
             _collisionHandler.OnBadCollision -= FailGame;
             _missDetector.OnMiss -= FailGame;
-            _tower.OnCollapsed -= FailGameByTowerCollapse;
+            _towerCollapse.OnCollapsed -= FailGame;
         }
 
         private void FailGame() => 
             _levelStateMachine.Enter<LevelFailState>();
-
-        private void FailGameByTowerCollapse()
-        {
-            _cameraShaker.Shake();
-            FailGame();
-        }
     }
 }

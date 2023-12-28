@@ -1,4 +1,5 @@
 using CodeBase.Gameplay.BlocksPool;
+using CodeBase.Gameplay.CameraManagement;
 using CodeBase.Gameplay.RopeManagement;
 using CodeBase.Gameplay.TransformDescend;
 using CodeBase.Infrastructure.States;
@@ -15,6 +16,7 @@ namespace CodeBase.Gameplay.States
         private readonly ReleaseTimer _releaseTimer;
         private readonly RopeMovement _ropeMovement;
         private readonly TransformDescender _transformDescender;
+        private readonly CameraBlur _cameraBlur;
 
         private InputActions.MenuActions _menuInput;
 
@@ -25,7 +27,8 @@ namespace CodeBase.Gameplay.States
             Rope rope,
             RopeAttachment ropeAttachment,
             ReleaseTimer releaseTimer,
-            TransformDescender transformDescender
+            TransformDescender transformDescender,
+            CameraBlur cameraBlur
         )
         {
             _menuInput = inputActions.Menu;
@@ -35,6 +38,7 @@ namespace CodeBase.Gameplay.States
             _ropeAttachment = ropeAttachment;
             _releaseTimer = releaseTimer;
             _transformDescender = transformDescender;
+            _cameraBlur = cameraBlur;
         }
 
         public void Enter()
@@ -54,6 +58,7 @@ namespace CodeBase.Gameplay.States
 
         private void InitializeLevel()
         {
+            _cameraBlur.FastBlur();
             _blockPool.CreatePool();
             _ropeMovement.ResetLocation();
             _transformDescender.DescendDefaultTransforms();
@@ -63,6 +68,7 @@ namespace CodeBase.Gameplay.States
         {
             _menuInput.Disable();
             _ropeAttachment.AttachBlock();
+            _cameraBlur.SmoothFocus();
             await _ropeMovement.Drop();
             _stateMachine.Enter<LevelLoopState>();
         }

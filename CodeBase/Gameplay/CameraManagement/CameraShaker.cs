@@ -5,7 +5,7 @@ using DG.Tweening;
 using UnityEngine;
 using Zenject;
 
-namespace CodeBase.Gameplay.Stability
+namespace CodeBase.Gameplay.CameraManagement
 {
     public class CameraShaker : IInitializable, IDisposable
     {
